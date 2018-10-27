@@ -10,33 +10,29 @@ fs = require("fs");
 request = require("request");
 parser = require("node-html-parser");
 
-
-
-// Make this generic and rename to something like AutoList
-// Or make it a precaching stream
-class InsultList {
-  // Keep the list at the same size, and move the cursor up.
-  constructor(insults, maxBackups) {
-    this.insults = [];
-    this.backups = insults;
-    this.maxBackups = maxBackups;
+class PrefetchedStream {
+  constructor(sourceAsync, seed = [], maxBackups) {
+    this.sourceAsync = sourceAsync;
+    this.prefetched = seed;
+    this.backups = [];
+    this.maxBackups = maxBackups || 20;
   }
 
-  getInsult() {
-    if (this.insults.length === 0) {
+  next() {
+    if (this.prefetched.length === 0) {
       return randomElement(this.backups);
     }
 
-    insult = this.insults.pop();
-    fetchInsult(insult => this.insults.push(insult));
-    this.addToBackups(insult);
-    return insult;
+    const elt = this.prefetched.pop();
+    this.sourceAsync(elt => this.prefetched.push(elt));
+    this.addToBackups(elt);
+    return elt;
   }
 
-  addToBackups(insult) {
-    this.backups.push(insult);
+  addToBackups(elt) {
+    this.backups.push(elt);
     if (this.backups.length > this.maxBackups) {
-      this.backups.pop()
+      this.elt.pop();
     }
   }
 }
@@ -60,11 +56,13 @@ function fetchInsult(cb) {
   });
 }
 
-insults = InsultList([], 100);
+const insults = new PrefetchedStream(fetchInsult, ["Hi!", "hello"], 100);
 
 module.exports = function(robot) {
+  robot.hear(/debug/, res => {
+    res.send(`backups: ${insults.backups} prefetched: ${insults.prefetched}`);
+  });
   robot.hear(/haa/, res => {
-    res.send(randomElement(insultList));
-    fetchInsult(insult => insultList.push(insult));
+    res.send(insults.next());
   });
 };
