@@ -8,36 +8,63 @@
 
 fs = require("fs");
 request = require("request");
+parser = require("node-html-parser");
 
-const parser = DOMParser();
 
-const insults = [];
+
+// Make this generic and rename to something like AutoList
+// Or make it a precaching stream
+class InsultList {
+  // Keep the list at the same size, and move the cursor up.
+  constructor(insults, maxBackups) {
+    this.insults = [];
+    this.backups = insults;
+    this.maxBackups = maxBackups;
+  }
+
+  getInsult() {
+    if (this.insults.length === 0) {
+      return randomElement(this.backups);
+    }
+
+    insult = this.insults.pop();
+    fetchInsult(insult => this.insults.push(insult));
+    this.addToBackups(insult);
+    return insult;
+  }
+
+  addToBackups(insult) {
+    this.backups.push(insult);
+    if (this.backups.length > this.maxBackups) {
+      this.backups.pop()
+    }
+  }
+}
 
 function randomElement(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
-function readLines(fileName) {
-  return fs
-    .readFileSync(fileName, "utf-8")
-    .split("\n")
-    .filter(line => line !== "");
-}
-
 function extractInsult(page) {
-  const doc = parser.parseFromString(page, "text/html");
+  const root = parser.parse(page);
+  return root.querySelector(".customBig").structuredText;
 }
 
-function fetchInsultPage(cb) {
+function fetchInsult(cb) {
   request.get("https://www.wowbagger.com/process.php", function(
     error,
     response,
     body
   ) {
-    insults.push(extractInsult(body));
+    cb(extractInsult(body));
   });
 }
 
+insults = InsultList([], 100);
+
 module.exports = function(robot) {
-  robot.hear(/haa/, res => res.send(randomElement(insults)));
+  robot.hear(/haa/, res => {
+    res.send(randomElement(insultList));
+    fetchInsult(insult => insultList.push(insult));
+  });
 };
