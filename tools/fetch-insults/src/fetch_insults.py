@@ -9,6 +9,7 @@ import requests
 log = logging.getLogger(__name__)
 
 URL = 'https://www.wowbagger.com/process.php'
+MAX_CONCURRENT_REQUESTS = 100
 
 # def fetch_page():
 #     response = requests.get(URL)
@@ -26,48 +27,49 @@ def parse_insult(page: str) -> str:
         return segments[0].string
 
 
-def new_parser() -> ArgumentParser:
+def new_arg_parser() -> ArgumentParser:
     parser = ArgumentParser()
-    parser.add_argument('-n',
-                        metavar='<int>',
-                        required=True,
-                        type=int,
-                        help="Number of insults to fetch",
-                        default=1)
-    parser.add_argument('--async', action='store_true')
+    parser.add_argument(
+        '-n',
+        metavar='<int>',
+        type=int,
+        help='Number of insults to fetch (default=1)',
+        default=1)
+    parser.add_argument(
+        '-c',
+        metavar='<int>',
+        type=int,
+        help='Number of concurrent requests (default=number of insults)')
+    parser.add_argument(
+        '--timeout',
+        metavar='<int>',
+        type=int,
+        help='Timeout (in seconds, default=10)',
+        default=10)
     return parser
 
 
 def read_arguments():
-    parser = new_parser()
+    parser = new_arg_parser()
     return parser.parse_args()
 
 
-def is_valid(resp: requests.Response) -> bool:
-    return hasattr(resp, "status_code") and resp.status_code == 200
+def get_async(n: int, timeout_s: int=10, *args, **kwargs):
+    def is_valid(resp: requests.Response) -> bool:
+        return hasattr(resp, "status_code") and resp.status_code == 200
 
-
-def get_async(n: int, *args, **kwargs):
-    rs = (grequests.get(URL) for _ in range(n))
+    rs = (grequests.get(URL, timeout=timeout_s) for _ in range(n))
     responses = grequests.imap(rs, *args, **kwargs)
     pages = (resp.content for resp in responses if is_valid(resp))
     return (parse_insult(page) for page in pages)
 
 
-def get_sync(n: int):
-    for i in range(n):
-        resp = requests.get(URL)
-        if is_valid(resp):
-            yield parse_insult(resp.content)
-
-
-def main(n: int, async: bool=True):
-    insults = get_async(n, size=6) if async else get_sync(n)
-
-    for ins in insults:
+def main(n: int, size: int, timeout_s: int):
+    for ins in get_async(n, size=size, timeout_s=timeout_s):
         print(ins)
 
 
 if __name__ == "__main__":
     arguments = read_arguments()
-    main(arguments.n, arguments.async)
+    size = arguments.c or min(arguments.n, MAX_CONCURRENT_REQUESTS)
+    main(arguments.n, size, arguments.timeout)
