@@ -64,7 +64,7 @@ def get_async(n: int, timeout_s: int=10, *args, **kwargs):
     return (parse_insult(page) for page in pages)
 
 
-def main(n: int, size: int, timeout_s: int):
+def main(n: int, size: int=6, timeout_s: int=10):
     for ins in get_async(n, size=size, timeout_s=timeout_s):
         print(ins)
 
