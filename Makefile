@@ -18,15 +18,18 @@ clean:
 
 
 .PHONY: start
-start: ## Start the hubot
 start:
-	cd hubot; ./bin/hubot
+start:
+	cd ${BOT}; ./bin/hubot
 
 ./purescript/dist/bundle.js:
 	cd purescript; \
 	pulp browserify -O --skip-entry-point --standalone bundle \
 					--main Bot --to ./dist/bundle.js
 
+alonzo: ## Start alonzo
+alonzo: BOT=alonzo
+alonzo: start
 
 
 
