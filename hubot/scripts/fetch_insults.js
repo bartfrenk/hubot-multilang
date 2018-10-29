@@ -56,7 +56,12 @@ function fetchInsult(cb) {
   });
 }
 
-const insults = new PrefetchedStream(fetchInsult, ["Hi!", "hello"], 100);
+const initial = fs
+  .readFileSync("resources/insults.txt", "utf-8")
+  .split("\n")
+  .filter(s => s !== "");
+
+const insults = new PrefetchedStream(fetchInsult, initial, 100);
 
 module.exports = function(robot) {
   robot.hear(/debug/, res => {
