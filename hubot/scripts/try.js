@@ -10,6 +10,7 @@ fs = require("fs");
 request = require("request");
 parser = require("node-html-parser");
 
+// TODO: Take rate limiting of sourceAsync into account
 class PrefetchedStream {
   constructor(sourceAsync, seed = [], maxBackups) {
     this.sourceAsync = sourceAsync;

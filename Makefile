@@ -1,5 +1,5 @@
 .DEFAULT_GOAL: help
-PROJECT_NAME := hubot-purescript
+PROJECT_NAME := hubot-multilang
 
 .PHONY: help
 help: ## Show this help
@@ -7,25 +7,26 @@ help: ## Show this help
 	@fgrep -h "##" $(MAKEFILE_LIST) | \
 	fgrep -v fgrep | sed -e 's/## */##/' | column -t -s##
 
-
-.PHONY: install
-build: ./purescript/dist/bundle.js
+.PHONY: build
 build: ## Compile and install the purescript files
+build: lang/purescript/dist/bundle.js
 
 .PHONY: clean
-clean:
-	rm purescript/dist/bundle.js
-
+clean: ## Remove generated files
+	@rm lang/purescript/dist/bundle.js
 
 .PHONY: start
 start: ## Start the hubot
-start:
-	cd hubot; ./bin/hubot
+	@cd hubot; ./bin/hubot
 
-./purescript/dist/bundle.js:
-	cd purescript; \
+.PHONY: docker-redis
+docker-redis: ## Run a Redis container mapped to port 16379
+	@docker run -d -p 16379:6379 --name hubot-brain redis:5.0.0
+
+lang/purescript/dist/bundle.js:
+	@cd lang/purescript; \
 	pulp browserify -O --skip-entry-point --standalone bundle \
-					--main Bot --to ./dist/bundle.js
+						--main Bot --to ./dist/bundle.js
 
 
 
