@@ -16,6 +16,7 @@ clean: ## Remove generated files
 	@rm lang/purescript/dist/bundle.js
 
 .PHONY: start
+<<<<<<< HEAD
 start: ## Start the hubot
 	@cd hubot; ./bin/hubot
 
@@ -23,11 +24,19 @@ start: ## Start the hubot
 docker-redis: ## Run a Redis container mapped to port 16379
 	@docker run -d -p 16379:6379 --name hubot-brain redis:5.0.0
 
+.PHONY: alonzo
+alonzo: ## Start alonzo
+alonzo: BOT=alonzo
+alonzo: start
+
+.PHONY: start
+start:
+start:
+	cd ${BOT}; ./bin/hubot
+
 lang/purescript/dist/bundle.js:
 	@cd lang/purescript; \
 	pulp browserify -O --skip-entry-point --standalone bundle \
 						--main Bot --to ./dist/bundle.js
-
-
 
 
