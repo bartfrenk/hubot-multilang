@@ -69,7 +69,7 @@ const insults = new PrefetchedStream(fetchInsult, initial, 100);
 
 module.exports = function(robot) {
   robot.respond(/debug:insults/, res => {
-    res.reply(`backups: ${insults.backups} prefetched: ${insults.prefetched}`);
+    res.reply(`backups: ${insults.backups}\nprefetched: ${insults.prefetched}`);
   });
   robot.hear(/marvin\??/gi, res => {
     res.send(insults.next());
