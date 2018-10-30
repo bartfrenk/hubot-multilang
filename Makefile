@@ -15,11 +15,6 @@ build: lang/purescript/dist/bundle.js
 clean: ## Remove generated files
 	@rm lang/purescript/dist/bundle.js
 
-.PHONY: start
-<<<<<<< HEAD
-start: ## Start the hubot
-	@cd hubot; ./bin/hubot
-
 .PHONY: docker-redis
 docker-redis: ## Run a Redis container mapped to port 16379
 	@docker run -d -p 16379:6379 --name hubot-brain redis:5.0.0
@@ -30,7 +25,6 @@ alonzo: BOT=alonzo
 alonzo: start
 
 .PHONY: start
-start:
 start:
 	cd ${BOT}; ./bin/hubot
 
