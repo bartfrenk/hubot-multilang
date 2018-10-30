@@ -26,6 +26,7 @@ alonzo: start
 
 .PHONY: start
 start:
+	export REDIS_URL=redis://localhost:16379/alonzo; \
 	cd ${BOT}; ./bin/hubot
 
 lang/purescript/dist/bundle.js:
