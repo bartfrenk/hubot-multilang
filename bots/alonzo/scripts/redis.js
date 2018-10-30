@@ -2,6 +2,7 @@
 //   "node_redis": "^2.8.0"
 
 const redis = require("redis");
+const hello = require("../src/hello.js");
 
 class TrelloProxy {
   constructor(trelloKey, trelloToken) {
@@ -23,5 +24,9 @@ module.exports = function(robot) {
     redisClient.get(key, (err, reply) => {
       msg.reply(`${key}=${reply && reply.toString()}`);
     });
+  });
+
+  robot.hear(/hh/, msg => {
+    msg.reply(hello(1));
   });
 };

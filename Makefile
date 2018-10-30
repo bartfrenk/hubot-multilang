@@ -26,12 +26,12 @@ alonzo: start
 
 .PHONY: start
 start:
-	export REDIS_URL=redis://localhost:16379/alonzo; \
-	cd ${BOT}; ./bin/hubot
+	export REDIS_URL=redis://localhost:16379/${BOT}; \
+	cd bots/${BOT}; ./bin/hubot
 
 lang/purescript/dist/bundle.js:
 	@cd lang/purescript; \
 	pulp browserify -O --skip-entry-point --standalone bundle \
-						--main Bot --to ./dist/bundle.js
+					   --main Bot --to ./dist/bundle.js
 
 
